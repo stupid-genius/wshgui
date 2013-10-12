@@ -151,6 +151,30 @@ while(!quit) WScript.Sleep(1000);
 </job>
 
 /****************
+*	Installer	*
+****************/
+<job id="Install">
+<runtime>
+	<description>Installs the script job to the local disk.</description>
+	<named name="path" helpstring="Full target path" required="true" />
+	<named name="menu" helpstring="Create start menu entry" />
+	<named name="auto" helpstring="Set to autorun" type="boolean" />
+	<named name="debug" helpstring="Set debug mode" type="boolean" />
+	<example>wshIEShell.wsf //Job:Install /path:"c:\target directory\targetFileName.wsf" /menu:"Script Name"</example>
+</runtime>
+<object id="wshShell" progid="WScript.Shell" />
+<object id="wshFSO" progid="Scripting.FileSystemObject" />
+<script language="JScript">
+<![CDATA[
+	var args = WScript.Arguments;
+	var scriptFile = fso.GetFile(WScript.ScriptFullName);
+	scriptFile.Copy(args.Named.Item("path"));
+	
+]]>
+</script>
+</job>
+
+/****************
 *	Examples	*
 ****************/
 <job id="Examples">
