@@ -1,0 +1,335 @@
+<?xml version="1.0"?>
+/****************************************
+/	IE GUI
+/	for Windows Script Host
+/	written by Allen Ng
+/***************************************/
+<package>
+<job id="Main">
+<runtime>
+	<description>A Windows Script Host GUI template using IE</description>
+	<named name="debug" helpstring="Set debug mode" type="boolean" required="false" />
+	<example>See examples with "wshIEShell.wsf //Job:Examples /?"</example>
+</runtime>
+<resource id="RDocTitle">Window Script Host template</resource>
+<script language="JScript">
+<![CDATA[
+// globals
+var wshGUI = true;
+var wshDebug = WScript.Arguments.Named.Item("debug");
+var wshIE = WScript.CreateObject("InternetExplorer.Application", "ie_");
+var init=0;
+var quit=0;
+
+function main(wshArgs)
+{
+	quit=1;
+}
+
+// utils
+function nl2br(s)
+{
+	return s.replace(/\\n/g,"<br />");
+}
+var wshPrint = wshGUI ? function(s){wshIE.Document.all.EOutput.innerHTML += nl2br(s);} : function(s){WScript.Echo(s);};
+var wshPrintln = wshGUI ? function(s){wshIE.Document.all.EOutput.innerHTML += nl2br(s+"\\n");} : function(s){WScript.Echo(s);};
+var wshAlert = wshGUI ? function(s){wshIE.Document.parentWindow.alert(s);} : function(s){WScript.Echo(s);};
+String.prototype.trim = function()
+{
+	return this.replace(/^\s+|\s+$/g,"");
+}
+String.prototype.ltrim = function()
+{
+	return this.replace(/^\s+/,"");
+}
+String.prototype.rtrim = function()
+{
+	return this.replace(/\s+$/,"");
+}
+function wshOpenFile(path)
+{
+	var text;
+	if(wshFSO.FileExists(path))
+	{
+		var f = wshFSO.OpenTextFile(path, 1);
+		text = f.ReadAll();
+		f.Close();
+	}
+	return text;
+}
+/*
+*	create with new
+*/
+function JSLineFile(path)
+{
+	var lineFile;
+	if(wshFSO.FileExists(path))
+	{
+		lineFile = wshFSO.OpenTextFile(path, 1);
+	}
+
+	this.hasNext = function()
+	{
+		var status = !lineFile.AtEndOfStream;
+		if(!status)
+			lineFile.Close();
+		return status;
+	}
+	this.nextLine = function()
+	{
+		return lineFile.ReadLine();
+	}
+}
+function JSLog(name)
+{
+	var sysLog = name==undefined?true:false;
+	var log
+	if(!sysLog)
+		log = wshFSO.CreateTextFile(name, true);
+
+	this.write = sysLog ? function(text)
+	{
+		wshShell.LogEvent(4, text);
+	}:
+	function(text)
+	{
+		log.WriteLine(text);
+	}
+	this.close = function()
+	{
+		if(!sysLog)
+			log.Close();
+	}
+}
+
+// inits page after nav to blank page is complete
+function ie_DocumentComplete()
+{
+	var sBody = '';
+	var sJash = wshDebug?'<script type="text/javascript" src="http://www.billyreisinger.com/jash/source/latest/Jash.js"></script>':"";
+	wshIE.Document.write('<!DOCTYPE HTML><html><head><meta charset="UTF-8"><title></title><style type="text/css"></style><script type="text/javascript"></script>'+sJash+'</head><body>'+sBody+'<div id="EOutput"></div></body></html>');
+	wshIE.Document.title = getResource("RDocTitle");
+	wshIE.Visible=true;
+	if(wshDebug)
+		wshPrintln("DEBUG MODE");
+	init=1;
+}
+// exits from WSH after you close IE
+function ie_Onquit()
+{
+	quit=1;
+}
+
+if(wshGUI)
+{
+	// Initialize form
+	wshIE.AddressBar	= false;
+	wshIE.FullScreen	= false;
+	wshIE.MenuBar		= false;
+	wshIE.Resizable		= true;
+	wshIE.StatusBar		= false;
+	wshIE.ToolBar		= false;
+
+	// Set the size
+	wshIE.Width = 800;
+	wshIE.Height = 600;
+
+	wshIE.Navigate("about:blank");
+	while(!init) WScript.Sleep(1000);
+}
+
+try{
+main(WScript.Arguments);
+}
+catch(e){
+wshAlert(e);
+}
+
+while(!quit) WScript.Sleep(1000);
+]]>
+</script>
+</job>
+
+/****************
+*	Examples	*
+****************/
+<job id="Examples">
+<?job error="true" debug="true"?>	// set to display errors if they occur and to start a debugger
+<runtime>	// append "/?" to access help
+	<description>A job containing examples and reference code.</description>
+	<named name="debug" helpstring="Set debug mode" type="boolean" required="false" />
+	<named name="alert" helpstring="This string will be alerted." type="string" required="false" />
+	<unnamed name="echoText" helpstring="This string will be echoed." many="true" required="false" />
+	<example>example: wshIEShell.wsf //Job:Examples /alert:"Hello, World!" "HELLO! Hello. hello"</example>
+</runtime>
+<object id="wshShell" progid="WScript.Shell" />
+<object id="wshFSO" progid="Scripting.FileSystemObject" />
+<object id="wshCtrl" progid="WshController" />
+<object id="wshServer" progid="MSXML2.ServerXMLHTTP.3.0" />
+<object id="wshADOConn" progid="ADODB.Connection" />
+<object id="wshADORecSet" progid="ADODB.Recordset" />
+<object id="wshNet" progid="WScript.Network" />
+<resource id="RExample">Window Script Host examples</resource>
+<script language="JScript">
+<![CDATA[	// bypasses the XML parser so it doesn't freak out when it sees the JScript code
+// globals
+var wshGUI = true;	// setting to true uses IE as a GUI
+var wshDebug = WScript.Arguments.Named.Item("debug");
+var wshIE = WScript.CreateObject("InternetExplorer.Application", "ie_");	//Creates the IE instance.  The "ie_" parameter causes any function you preface with "ie_" to bind to the IE event with the same name as the function without the "ie_" prepended.  So "ie_DocumentComplete" binds to the IE event "onDocumentComplete".
+var init = 0;
+var quit = 0;
+
+var log;
+
+function main(wshArgs)
+{
+	if(wshDebug)
+	{
+		log = new JSLog("example.log");
+		log.write(WScript.ScriptName+" entered debug mode.");
+		wshShell.LogEvent(0, WScript.ScriptName+" entered debug mode.");
+	}
+	if(wshArgs.Named.Exists("alert"))
+		wshAlert(wshArgs.Named.Item("alert"));
+	if(wshArgs.Unnamed.length>0)
+		for(var i=0;i<wshArgs.Unnamed.length;++i)
+			WScript.Echo(wshArgs.Unnamed(i));
+	wshPrintln(wshShell.ExpandEnvironmentStrings("PATH=%PATH%"));
+	wshPrint("These special folders are available (script references are in the comments):<br /><ul>");
+	/*-----------------------------------------------
+	AllUsersDesktop, AllUsersStartMenu, AllUsersPrograms, AllUsersStartup, Desktop, Favorites, Fonts, MyDocuments, NetHood, PrintHood, Programs, Recent, SendTo, StartMenu, Startup, Templates
+	-----------------------------------------------*/
+	for(var specFolders = new Enumerator(wshShell.SpecialFolders);!specFolders.atEnd();specFolders.moveNext())
+		wshPrint('<li>'+specFolders.item()+'</li>');
+	wshPrint("</ul>");
+	wshPrintln("The desktop path is "+wshShell.SpecialFolders("Desktop"));
+	//wshShell.RegRead();
+	//wshShell.Environment("SYSTEM")("PATH");
+	quit=1;
+}
+
+// utils
+var wshPrint = wshGUI ? function(s){wshIE.Document.all.EOutput.innerHTML += s.nl2br();} : function(s){WScript.Echo(s);};
+var wshPrintln = wshGUI ? function(s){wshIE.Document.all.EOutput.innerHTML += (s+"\\n").nl2br();} : function(s){WScript.Echo(s);};
+var wshAlert = wshGUI ? function(s){wshIE.Document.parentWindow.alert(s);} : function(s){WScript.Echo(s);};
+String.prototype.nl2br = function()
+{
+	return this.replace(/\\n/g,"<br />");
+}
+String.prototype.trim = function()
+{
+	return this.replace(/^\s+|\s+$/g,"");
+}
+String.prototype.ltrim = function()
+{
+	return this.replace(/^\s+/,"");
+}
+String.prototype.rtrim = function()
+{
+	return this.replace(/\s+$/,"");
+}
+function wshOpenFile(path)
+{
+	var text;
+	if(wshFSO.FileExists(path))
+	{
+		var f = wshFSO.OpenTextFile(path, 1);
+		text = f.ReadAll();
+		f.Close();
+	}
+	return text;
+}
+/*
+*	create with new
+*/
+function JSLineFile(path)
+{
+	var lineFile;
+	if(wshFSO.FileExists(path))
+	{
+		lineFile = wshFSO.OpenTextFile(path, 1);
+	}
+
+	this.hasNext = function()
+	{
+		var status = !lineFile.AtEndOfStream;
+		if(!status)
+			lineFile.Close();
+		return status;
+	}
+	this.nextLine = function()
+	{
+		return lineFile.ReadLine();
+	}
+}
+function JSLog(name)
+{
+	var sysLog = name==undefined?true:false;
+	var log
+	if(!sysLog)
+		log = wshFSO.CreateTextFile(name, true);
+
+	this.write = sysLog ? function(text)
+	{
+		wshShell.LogEvent(4, text);
+	}:
+	function(text)
+	{
+		log.WriteLine(text);
+	}
+	this.close = function()
+	{
+		if(!sysLog)
+			log.Close();
+	}
+}
+
+//inits page after nav to blank page is complete
+function ie_DocumentComplete()
+{
+	// Jash can only see code in the browser, so it can't be used to debug WSH
+	var sJash = wshDebug?'<script type="text/javascript" src="http://sharepoint.scj.com/sites/global/BW/BWDEV/aln/scripts/Jash.js"></script>':"";
+	// cleaner to just write the HTML document myself instead of having a separate file
+	wshIE.Document.write('<!DOCTYPE HTML><html><head><meta charset="UTF-8"><title></title><style type="text/css"></style><script type="text/javascript"></script>'+sJash+'</head><body><div id="EOutput"></div></body></html>');
+	wshIE.Document.title = getResource("RExample");
+	wshIE.Visible=true;
+	if(wshDebug)
+		wshPrintln("DEBUG MODE");
+	init=1;
+}
+//exits from WSH after you close IE
+function ie_Onquit()
+{
+	quit=1;
+}
+
+if(wshGUI || wshDebug)
+{
+	// Initialize form
+	wshIE.AddressBar = false;
+	wshIE.FullScreen = false;
+	wshIE.MenuBar    = false;
+	wshIE.Resizable  = false;
+	wshIE.StatusBar  = false;
+	wshIE.ToolBar    = false;
+
+	// Set the size
+	wshIE.Width = 800;
+	wshIE.Height = 600;
+
+	wshIE.Navigate("about:blank");
+	while(!init) WScript.Sleep(1000);
+}
+
+try{
+main(WScript.Arguments);
+}
+catch(e){
+wshAlert(e);
+}
+
+while(!quit) WScript.Sleep(1000);	// Keeps script alive while waiting for events.  Events still fire while script thread is sleeping.
+]]>
+</script>
+</job>
+</package>
