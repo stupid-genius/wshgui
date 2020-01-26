@@ -21,36 +21,29 @@ var wshIE = WScript.CreateObject("InternetExplorer.Application", "ie_");
 var init=0;
 var quit=0;
 
-function main(wshArgs)
-{
+function main(wshArgs){
 	quit=1;
 }
 
 // utils
-function nl2br(s)
-{
+function nl2br(s){
 	return s.replace(/\\n/g,"<br />");
 }
 var wshPrint = wshGUI ? function(s){wshIE.Document.all.EOutput.innerHTML += nl2br(s);} : function(s){WScript.Echo(s);};
 var wshPrintln = wshGUI ? function(s){wshIE.Document.all.EOutput.innerHTML += nl2br(s+"\\n");} : function(s){WScript.Echo(s);};
 var wshAlert = wshGUI ? function(s){wshIE.Document.parentWindow.alert(s);} : function(s){WScript.Echo(s);};
-String.prototype.trim = function()
-{
+String.prototype.trim = function(){
 	return this.replace(/^\s+|\s+$/g,"");
 }
-String.prototype.ltrim = function()
-{
+String.prototype.ltrim = function(){
 	return this.replace(/^\s+/,"");
 }
-String.prototype.rtrim = function()
-{
+String.prototype.rtrim = function(){
 	return this.replace(/\s+$/,"");
 }
-function wshOpenFile(path)
-{
+function wshOpenFile(path){
 	var text;
-	if(wshFSO.FileExists(path))
-	{
+	if(wshFSO.FileExists(path)){
 		var f = wshFSO.OpenTextFile(path, 1);
 		text = f.ReadAll();
 		f.Close();
@@ -60,51 +53,42 @@ function wshOpenFile(path)
 /*
 *	create with new
 */
-function JSLineFile(path)
-{
+function JSLineFile(path){
 	var lineFile;
-	if(wshFSO.FileExists(path))
-	{
+	if(wshFSO.FileExists(path)){
 		lineFile = wshFSO.OpenTextFile(path, 1);
 	}
 
-	this.hasNext = function()
-	{
+	this.hasNext = function(){
 		var status = !lineFile.AtEndOfStream;
 		if(!status)
 			lineFile.Close();
 		return status;
 	}
-	this.nextLine = function()
-	{
+	this.nextLine = function(){
 		return lineFile.ReadLine();
 	}
 }
-function JSLog(name)
-{
+function JSLog(name){
 	var sysLog = name==undefined?true:false;
 	var log
 	if(!sysLog)
 		log = wshFSO.CreateTextFile(name, true);
 
-	this.write = sysLog ? function(text)
-	{
+	this.write = sysLog ? function(text){
 		wshShell.LogEvent(4, text);
 	}:
-	function(text)
-	{
+	function(text){
 		log.WriteLine(text);
 	}
-	this.close = function()
-	{
+	this.close = function(){
 		if(!sysLog)
 			log.Close();
 	}
 }
 
 // inits page after nav to blank page is complete
-function ie_DocumentComplete()
-{
+function ie_DocumentComplete(){
 	var sBody = '';
 	var sJash = wshDebug?'<script type="text/javascript" src="http://www.billyreisinger.com/jash/source/latest/Jash.js"></script>':"";
 	wshIE.Document.write('<!DOCTYPE HTML><html><head><meta charset="UTF-8"><title></title><style type="text/css"></style><script type="text/javascript"></script>'+sJash+'</head><body>'+sBody+'<div id="EOutput"></div></body></html>');
@@ -115,13 +99,11 @@ function ie_DocumentComplete()
 	init=1;
 }
 // exits from WSH after you close IE
-function ie_Onquit()
-{
+function ie_Onquit(){
 	quit=1;
 }
 
-if(wshGUI)
-{
+if(wshGUI){
 	// Initialize form
 	wshIE.AddressBar	= false;
 	wshIE.FullScreen	= false;
@@ -139,10 +121,10 @@ if(wshGUI)
 }
 
 try{
-main(WScript.Arguments);
+	main(WScript.Arguments);
 }
 catch(e){
-wshAlert(e);
+	wshAlert(e);
 }
 
 while(!quit) WScript.Sleep(1000);
@@ -181,10 +163,8 @@ var quit = 0;
 
 var log;
 
-function main(wshArgs)
-{
-	if(wshDebug)
-	{
+function main(wshArgs){
+	if(wshDebug){
 		log = new JSLog("example.log");
 		log.write(WScript.ScriptName+" entered debug mode.");
 		wshShell.LogEvent(0, WScript.ScriptName+" entered debug mode.");
@@ -212,27 +192,21 @@ function main(wshArgs)
 var wshPrint = wshGUI ? function(s){wshIE.Document.all.EOutput.innerHTML += s.nl2br();} : function(s){WScript.Echo(s);};
 var wshPrintln = wshGUI ? function(s){wshIE.Document.all.EOutput.innerHTML += (s+"\\n").nl2br();} : function(s){WScript.Echo(s);};
 var wshAlert = wshGUI ? function(s){wshIE.Document.parentWindow.alert(s);} : function(s){WScript.Echo(s);};
-String.prototype.nl2br = function()
-{
+String.prototype.nl2br = function(){
 	return this.replace(/\\n/g,"<br />");
 }
-String.prototype.trim = function()
-{
+String.prototype.trim = function(){
 	return this.replace(/^\s+|\s+$/g,"");
 }
-String.prototype.ltrim = function()
-{
+String.prototype.ltrim = function(){
 	return this.replace(/^\s+/,"");
 }
-String.prototype.rtrim = function()
-{
+String.prototype.rtrim = function(){
 	return this.replace(/\s+$/,"");
 }
-function wshOpenFile(path)
-{
+function wshOpenFile(path){
 	var text;
-	if(wshFSO.FileExists(path))
-	{
+	if(wshFSO.FileExists(path)){
 		var f = wshFSO.OpenTextFile(path, 1);
 		text = f.ReadAll();
 		f.Close();
@@ -242,51 +216,42 @@ function wshOpenFile(path)
 /*
 *	create with new
 */
-function JSLineFile(path)
-{
+function JSLineFile(path){
 	var lineFile;
-	if(wshFSO.FileExists(path))
-	{
+	if(wshFSO.FileExists(path)){
 		lineFile = wshFSO.OpenTextFile(path, 1);
 	}
 
-	this.hasNext = function()
-	{
+	this.hasNext = function(){
 		var status = !lineFile.AtEndOfStream;
 		if(!status)
 			lineFile.Close();
 		return status;
 	}
-	this.nextLine = function()
-	{
+	this.nextLine = function(){
 		return lineFile.ReadLine();
 	}
 }
-function JSLog(name)
-{
+function JSLog(name){
 	var sysLog = name==undefined?true:false;
 	var log
 	if(!sysLog)
 		log = wshFSO.CreateTextFile(name, true);
 
-	this.write = sysLog ? function(text)
-	{
+	this.write = sysLog ? function(text){
 		wshShell.LogEvent(4, text);
 	}:
-	function(text)
-	{
+	function(text){
 		log.WriteLine(text);
 	}
-	this.close = function()
-	{
+	this.close = function(){
 		if(!sysLog)
 			log.Close();
 	}
 }
 
 //inits page after nav to blank page is complete
-function ie_DocumentComplete()
-{
+function ie_DocumentComplete(){
 	// Jash can only see code in the browser, so it can't be used to debug WSH
 	var sJash = wshDebug?'<script type="text/javascript" src="http://sharepoint.scj.com/sites/global/BW/BWDEV/aln/scripts/Jash.js"></script>':"";
 	// cleaner to just write the HTML document myself instead of having a separate file
@@ -298,13 +263,11 @@ function ie_DocumentComplete()
 	init=1;
 }
 //exits from WSH after you close IE
-function ie_Onquit()
-{
+function ie_Onquit(){
 	quit=1;
 }
 
-if(wshGUI || wshDebug)
-{
+if(wshGUI || wshDebug){
 	// Initialize form
 	wshIE.AddressBar = false;
 	wshIE.FullScreen = false;
@@ -322,10 +285,10 @@ if(wshGUI || wshDebug)
 }
 
 try{
-main(WScript.Arguments);
+	main(WScript.Arguments);
 }
 catch(e){
-wshAlert(e);
+	wshAlert(e);
 }
 
 while(!quit) WScript.Sleep(1000);	// Keeps script alive while waiting for events.  Events still fire while script thread is sleeping.
